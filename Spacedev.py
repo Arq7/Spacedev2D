@@ -1,5 +1,6 @@
 # =============== Fleet Combat Test =============== #
-# Ver 0.05
+# Ver 0.05.1
+# - Small fixes
 # - Added collisions
 # - Reworked lists of objects (fields)
 # - Added find functionality
@@ -17,6 +18,7 @@
 # =============== ----------------- =============== #
 
 import time
+import sys
 
 # =============== Sprites =============== #
 
@@ -264,7 +266,7 @@ while True:
     # Input handling
     for ship in OBJECTS:
         print('Make a move for', ship.sprite)
-        inp = input('Input (w/s/a/d, f, b, i/k/j/l): ')
+        inp = input('Input (w/s/a/d, f, b, i/k/j/l, x): ')
         if inp == 'a':
             ship.xspeed -= 1
         elif inp == 'd':
@@ -294,17 +296,18 @@ while True:
         elif inp == 'l':
             ship.rotation = 'right'
             ship.sprite = s_right
+        elif inp == 'x':
+            sys.exit()
 
         print(ship.rotation)
 
         cMISSILES = MISSILES[:] # Same as .copy()
     for missile in cMISSILES:
         move_object(missile)
-
-    for ship in OBJECTS:
+        cOBJECTS = OBJECTS[:]
+    for ship in cOBJECTS:
         move_object(ship)
-        
-
+      
     erase_map()
     seton_map()
     print_map()
