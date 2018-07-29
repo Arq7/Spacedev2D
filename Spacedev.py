@@ -1,9 +1,6 @@
 # =============== Fleet Combat Test =============== #
-# Ver 0.05.1
-# - Small fixes
-# - Added collisions
-# - Reworked lists of objects (fields)
-# - Added find functionality
+# Ver 0.05.2
+# - Even more fixes
 
 # Todo:
 # Add asteroids for some fun
@@ -301,12 +298,15 @@ while True:
 
         print(ship.rotation)
 
-        cMISSILES = MISSILES[:] # Same as .copy()
+    cMISSILES = MISSILES[:] # Same as .copy()
     for missile in cMISSILES:
-        move_object(missile)
-        cOBJECTS = OBJECTS[:]
+        if missile in MISSILES:
+            move_object(missile)
+        
+    cOBJECTS = OBJECTS[:]
     for ship in cOBJECTS:
-        move_object(ship)
+        if ship in OBJECTS:
+            move_object(ship)
       
     erase_map()
     seton_map()
