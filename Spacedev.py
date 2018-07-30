@@ -1,21 +1,24 @@
 # =============== Fleet Combat Test =============== #
-# Ver 0.05.2
-# - Even more fixes
+# Ver 0.06
+# - Reworked move function and border collision
+# - Added field automation
+# - Cleared map funtions to the update_map funtion
 
 # Todo:
+# Replay system
 # Add asteroids for some fun
-# Collision masks?
-# Rework instance system
+# Collision masks
+# Maybe Rework instance system
 #
-# Possibly a sprite sheet?
+# Possibly a sprite bank system
 
 # Bug 1: x, y are flipped
-# Bug 2: move near the border is not perfect
 
 # =============== ----------------- =============== #
 
 import time
 import sys
+import random
 
 # =============== Sprites =============== #
 
@@ -44,9 +47,9 @@ class Object:
 
         Object.object_count += 1
 
-# class Missile(Object): INCLUDE MISSILE OBJECT
-
 # =============== Initiation =============== #
+
+missile_speed = 6
 
 # Fields
 OBJECTS = []
@@ -97,6 +100,12 @@ def seton_map():
     for object in MISSILES:
         MAP[object.x][object.y] = object.sprite
 
+def update_map():
+    erase_map()
+    seton_map()
+    print_map()
+    time.sleep(0.1)
+
 
 # Calculations
 def move_object(ship):
@@ -129,18 +138,11 @@ def move_object(ship):
 
         while move is True:
 
+        # ----- SIMMILARITY ------------------------ v
+            
             # -X- MOVEMENT
             if xmoves > 0:
-                if ship.x >= MAP_H - 1 or ship.x <= 0: # Map border ! MAP_H cuz it's flipped :\
-                    ship.xspeed = 0
-                    ship.yspeed = 0
-                    xmoves = 0
-                    ymoves = 0
-                    erase_map()
-                    seton_map()
-                    print('Map ends')
-                    destroy_obj(ship)
-                elif MAP[ship.x+xdirection][ship.y] != s_empty: # Collision
+                if MAP[ship.x+xdirection][ship.y] != s_empty: # Collision
                     ship.xspeed = 0
                     xmoves = 0
                     ymoves = 0
@@ -150,31 +152,20 @@ def move_object(ship):
                     print('Crash with', MAP[ship.x+xdirection][ship.y], 'in direction', xdirection)
                     destroy_obj(col)
                     destroy_obj(ship)
-                    erase_map()
-                    seton_map()
+                    
+                    update_map()
                     
                 else: # Proper move
                     print('Moving to', MAP[ship.x+xdirection][ship.y], 'in the direction of x', xdirection)
                     ship.x += xdirection
-                    erase_map()
-                    seton_map()
-                    print_map()
-                    time.sleep(0.1)
                     xmoves -= 1
+
+                    update_map()
                     print(xmoves, 'xmoves left')
 
             # -Y- MOVEMENT
             if ymoves > 0:
-                if ship.y >= MAP_W - 1 or ship.y <= 0: # Map border
-                    ship.yspeed = 0
-                    ship.xspeed = 0
-                    xmoves = 0
-                    ymoves = 0
-                    erase_map()
-                    seton_map()
-                    print('Map ends')
-                    destroy_obj(ship)
-                elif MAP[ship.x][ship.y+ydirection] != s_empty: # Collision
+                if MAP[ship.x][ship.y+ydirection] != s_empty: # Collision
                     ship.yspeed = 0
                     xmoves = 0
                     ymoves = 0
@@ -184,22 +175,32 @@ def move_object(ship):
                     print('Crash with', MAP[ship.x][ship.y+ydirection], 'in direction', ydirection)
                     destroy_obj(col)
                     destroy_obj(ship)
-                    erase_map()
-                    seton_map()
+
+                    update_map()
                     
                 else:  # Proper move
                     print('Moving to', MAP[ship.x][ship.y+ydirection], 'in the direction of y', ydirection)
                     ship.y += ydirection
-                    erase_map()
-                    seton_map()
-                    print_map()
-                    time.sleep(0.1)
                     ymoves -= 1
+
+                    update_map()
                     print(ymoves, 'ymoves left')
+                    
+        # ----- SIMMILARITY ------------------------ ^
 
             if xmoves + ymoves == 0:
                 print('Move = False')
                 move = False
+
+            if ship.x >= MAP_H - 1 or ship.x <= 0 or ship.y >= MAP_W - 1 or ship.y <= 0:
+                # Map border ! MAP_H cuz it's flipped :\
+                ship.xspeed = 0
+                ship.yspeed = 0
+                xmoves = 0
+                ymoves = 0
+                print('Map ends')
+                destroy_obj(ship)
+                update_map()
 
     print('Movement completed for', ship.sprite, '\n')
 
@@ -207,25 +208,25 @@ def move_object(ship):
 def fire(ship):
     if ship.rotation == 'up':
         if MAP[ship.x][ship.y-1] == s_empty:
-            obj = Object(ship.x,ship.y-1,s_missile,0,-6)
+            obj = Object(ship.x,ship.y-1,s_missile,0,-missile_speed)
             MISSILES.append(obj)
         else:
             print("Can't shoot!")
     if ship.rotation == 'down':
         if MAP[ship.x][ship.y+1] == s_empty:
-            obj = Object(ship.x,ship.y+1,s_missile,0,6)
+            obj = Object(ship.x,ship.y+1,s_missile,0,missile_speed)
             MISSILES.append(obj)
         else:
             print("Can't shoot!")
     if ship.rotation == 'right':
         if MAP[ship.x+1][ship.y] == s_empty:
-            obj = Object(ship.x+1,ship.y,s_missile,6,0)
+            obj = Object(ship.x+1,ship.y,s_missile,missile_speed,0)
             MISSILES.append(obj)
         else:
             print("Can't shoot!")
     if ship.rotation == 'left':
         if MAP[ship.x-1][ship.y] == s_empty:
-            obj = Object(ship.x-1,ship.y,s_missile,-6,0)
+            obj = Object(ship.x-1,ship.y,s_missile,-missile_speed,0)
             MISSILES.append(obj)
         else:
             print("Can't shoot!")
@@ -246,6 +247,13 @@ def find_obj(x,y):
             if x == obj.x and obj.y == y:
                 return(obj)
 
+def move_field(FIELD):
+    """Moves all objects in the field"""
+    COPY = FIELD[:] #.copy()
+    for obj in COPY:
+        if obj in FIELD:
+            move_object(obj)
+
 
 # =============== MAIN LOOP =============== #
 
@@ -253,17 +261,13 @@ while True:
 
     print('--------Turn starts----------')
 
-
-        
-    erase_map()
-    seton_map()
-    print_map()
-    time.sleep(0.1)
-
+    update_map()
+    
     # Input handling
     for ship in OBJECTS:
         print('Make a move for', ship.sprite)
         inp = input('Input (w/s/a/d, f, b, i/k/j/l, x): ')
+        # Move
         if inp == 'a':
             ship.xspeed -= 1
         elif inp == 'd':
@@ -272,11 +276,11 @@ while True:
             ship.yspeed -= 1
         elif inp == 's':
             ship.yspeed += 1
+        # Break
         elif inp == 'b':
             ship.yspeed = 0
             ship.xspeed = 0
             print('Breaking...')
-            print(ship.xspeed, ship.yspeed)
         # Fire
         elif inp == 'f':
             fire(ship)
@@ -293,27 +297,15 @@ while True:
         elif inp == 'l':
             ship.rotation = 'right'
             ship.sprite = s_right
+        # Exit
         elif inp == 'x':
             sys.exit()
 
-        print(ship.rotation)
-
-    cMISSILES = MISSILES[:] # Same as .copy()
-    for missile in cMISSILES:
-        if missile in MISSILES:
-            move_object(missile)
-        
-    cOBJECTS = OBJECTS[:]
-    for ship in cOBJECTS:
-        if ship in OBJECTS:
-            move_object(ship)
-      
-    erase_map()
-    seton_map()
-    print_map()
+    move_field(MISSILES)
+    move_field(OBJECTS)
 
     if len(OBJECTS) == 0:
-        print('No more objects')
+        print('No more objects on the map')
         break
 
     print('----------Turn ends----------')
