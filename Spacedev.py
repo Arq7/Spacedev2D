@@ -155,7 +155,6 @@ def move_object(ship, anim = 0, debug = 0):
 
                     update_map()
                     print(xmoves, 'xmoves left')
-                xmoves, ymoves = col_move(ship, xdirection, 0, xmoves, ymoves, anim)
 
             # -Y- MOVEMENT
             if ymoves > 0:
