@@ -150,27 +150,10 @@ def move_object(ship, anim = 0, debug = 0):
 
             # -X- MOVEMENT
             if xmoves > 0:
-                    
-                else: # Proper move
-
-                    update_map()
-                    print(xmoves, 'xmoves left')
                 xmoves, ymoves = col_move(ship, xdirection, 0, xmoves, ymoves, anim)
 
             # -Y- MOVEMENT
             if ymoves > 0:
-                if MAP[ship.x][ship.y+ydirection] != s_empty: # Collision
-                    ship.yspeed = 0
-                    xmoves = 0
-                    ymoves = 0
-                    # Collision damage
-                    col = find_obj(ship.x, ship.y+ydirection)
-                    print('Found:', col, 'at', col.x, col.y)
-                    print('Crash with', MAP[ship.x][ship.y+ydirection], 'in direction', ydirection)
-                    destroy_obj(col)
-                    destroy_obj(ship)
-
-                    update_map()
                 xmoves, ymoves = col_move(ship, 0, ydirection, xmoves, ymoves, anim)
                 
 
